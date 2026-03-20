@@ -7,7 +7,7 @@ def test_history_empty(client, auth_headers):
 def test_history_after_deploy(client, auth_headers):
     client.post(
         "/api/deploy",
-        json={"template_name": "histapp", "xml_content": "<x/>"},
+        json={"template_name": "histapp", "xml_content": "<Container/>"},
         headers=auth_headers,
     )
     resp = client.get("/api/history", headers=auth_headers)
@@ -25,7 +25,7 @@ def test_history_records_update(client, auth_headers):
     for _ in range(2):
         client.post(
             "/api/deploy",
-            json={"template_name": "repeated", "xml_content": "<x/>"},
+            json={"template_name": "repeated", "xml_content": "<Container/>"},
             headers=auth_headers,
         )
     resp = client.get("/api/history", headers=auth_headers)
@@ -45,7 +45,7 @@ def test_history_limit(client, auth_headers):
     for i in range(5):
         client.post(
             "/api/deploy",
-            json={"template_name": f"app{i}", "xml_content": "<x/>"},
+            json={"template_name": f"app{i}", "xml_content": "<Container/>"},
             headers=auth_headers,
         )
     resp = client.get("/api/history?limit=3", headers=auth_headers)

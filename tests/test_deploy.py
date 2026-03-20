@@ -14,12 +14,12 @@ def test_deploy_new_template(client, auth_headers, tmp_path):
 def test_deploy_overwrite_template(client, auth_headers):
     client.post(
         "/api/deploy",
-        json={"template_name": "myapp", "xml_content": "<v1/>"},
+        json={"template_name": "myapp", "xml_content": "<Container><Name>v1</Name></Container>"},
         headers=auth_headers,
     )
     resp = client.post(
         "/api/deploy",
-        json={"template_name": "myapp", "xml_content": "<v2/>"},
+        json={"template_name": "myapp", "xml_content": "<Container><Name>v2</Name></Container>"},
         headers=auth_headers,
     )
     assert resp.status_code == 200
@@ -29,7 +29,7 @@ def test_deploy_overwrite_template(client, auth_headers):
 def test_deploy_records_history(client, auth_headers):
     client.post(
         "/api/deploy",
-        json={"template_name": "histtest", "xml_content": "<x/>"},
+        json={"template_name": "histtest", "xml_content": "<Container/>"},
         headers=auth_headers,
     )
     hist = client.get("/api/history", headers=auth_headers).json()
@@ -40,7 +40,7 @@ def test_deploy_invalid_template_name(client, auth_headers, tmp_path):
     # "../../etc/passwd" sanitizes to "etcpasswd" — dots and slashes are stripped
     resp = client.post(
         "/api/deploy",
-        json={"template_name": "../../etc/passwd", "xml_content": "<x/>"},
+        json={"template_name": "../../etc/passwd", "xml_content": "<Container/>"},
         headers=auth_headers,
     )
     assert resp.status_code == 200
@@ -62,9 +62,49 @@ def test_deploy_requires_auth(client):
 def test_deploy_writes_file(client, auth_headers, tmp_path):
     resp = client.post(
         "/api/deploy",
-        json={"template_name": "filecheck", "xml_content": "<Root/>"},
+        json={"template_name": "filecheck", "xml_content": "<Container><Name>MyApp</Name></Container>"},
         headers=auth_headers,
     )
     assert resp.status_code == 200
     written = (tmp_path / "templates" / "filecheck.xml").read_text()
-    assert "<Root/>" in written
+    assert "<Container>" in written
+    assert "<Name>MyApp</Name>" in written
+
+
+def test_deploy_rejects_malformed_xml(client, auth_headers):
+    resp = client.post(
+        "/api/deploy",
+        json={"template_name": "bad", "xml_content": "<Container><unclosed>"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 422
+    assert "Malformed XML" in resp.json()["detail"]
+
+
+def test_deploy_rejects_wrong_root_element(client, auth_headers):
+    resp = client.post(
+        "/api/deploy",
+        json={"template_name": "bad", "xml_content": "<NotAContainer><Name>x</Name></NotAContainer>"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 422
+    assert "Container" in resp.json()["detail"]
+
+
+def test_deploy_validation_does_not_write_file(client, auth_headers, tmp_path):
+    client.post(
+        "/api/deploy",
+        json={"template_name": "neverwritten", "xml_content": "not xml at all"},
+        headers=auth_headers,
+    )
+    assert not (tmp_path / "templates" / "neverwritten.xml").exists()
+
+
+def test_deploy_validation_does_not_record_history(client, auth_headers):
+    client.post(
+        "/api/deploy",
+        json={"template_name": "ghost", "xml_content": "<Wrong/>"},
+        headers=auth_headers,
+    )
+    hist = client.get("/api/history", headers=auth_headers).json()
+    assert not any(h["template_name"] == "ghost" for h in hist)

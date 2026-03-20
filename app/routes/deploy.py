@@ -8,7 +8,7 @@ from sqlmodel import Session
 from app.auth import auth_required
 from app.db import get_session
 from app.models import DeployHistory, Token
-from app.services.template_service import write_template
+from app.services.template_service import validate_xml, write_template
 
 router = APIRouter()
 
@@ -24,6 +24,11 @@ def deploy_template(
     token: Token = Depends(auth_required),
     db: Session = Depends(get_session),
 ):
+    try:
+        validate_xml(body.xml_content)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
     templates_path = os.getenv("IZANAGI_TEMPLATES_PATH", "/templates")
     result = write_template(templates_path, body.template_name, body.xml_content)
 

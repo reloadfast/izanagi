@@ -1,4 +1,18 @@
+import xml.etree.ElementTree as ET
 from pathlib import Path
+
+
+def validate_xml(xml_content: str) -> None:
+    """Raise ValueError if xml_content is not a well-formed Unraid Container template."""
+    try:
+        root = ET.fromstring(xml_content)
+    except ET.ParseError as exc:
+        raise ValueError(f"Malformed XML: {exc}") from exc
+
+    if root.tag != "Container":
+        raise ValueError(
+            f"Invalid template: root element must be <Container>, got <{root.tag}>"
+        )
 
 
 def write_template(templates_path: str, template_name: str, xml_content: str) -> dict:

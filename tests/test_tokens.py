@@ -1,3 +1,23 @@
+def test_me_bootstrap_token(client, auth_headers):
+    resp = client.get("/api/me", headers=auth_headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["agent_name"] == "Bootstrap"
+
+
+def test_me_real_token(client, auth_headers):
+    raw = client.post(
+        "/api/tokens", json={"agent_name": "Aider"}, headers=auth_headers
+    ).json()["token"]
+    resp = client.get("/api/me", headers={"Authorization": f"Bearer {raw}"})
+    assert resp.status_code == 200
+    assert resp.json()["agent_name"] == "Aider"
+
+
+def test_me_requires_auth(client):
+    assert client.get("/api/me").status_code in (401, 403)
+
+
 def test_create_token(client, auth_headers):
     resp = client.post(
         "/api/tokens",

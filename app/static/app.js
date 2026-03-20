@@ -410,6 +410,8 @@ function initSettings() {
     await validateToken();
   });
 
+  document.getElementById("test-token-btn").addEventListener("click", validateToken);
+
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("save-token-btn").click();
   });
@@ -417,18 +419,27 @@ function initSettings() {
 
 async function validateToken() {
   const statusEl = document.getElementById("token-status");
+  const testBtn  = document.getElementById("test-token-btn");
+
   if (!localStorage.getItem("izanagi-token")) {
-    statusEl.innerHTML = "";
+    statusEl.className = "token-status-err";
+    statusEl.textContent = "✗ No token set";
     return;
   }
+
+  testBtn.disabled = true;
+  testBtn.textContent = "Testing…";
+
   try {
-    const tokens = await apiFetch("/api/tokens");
+    const data = await apiFetch("/api/me");
     statusEl.className = "token-status-ok";
-    statusEl.textContent = `✓ Token valid`;
-    void tokens; // response confirms auth worked
+    statusEl.textContent = `✓ Valid — authenticated as ${data.agent_name}`;
   } catch (e) {
     statusEl.className = "token-status-err";
     statusEl.textContent = `✗ ${e.message}`;
+  } finally {
+    testBtn.disabled = false;
+    testBtn.textContent = "Test";
   }
 }
 
@@ -436,6 +447,7 @@ async function loadSettings() {
   updateBanner();
   const input = document.getElementById("api-token-input");
   input.value = localStorage.getItem("izanagi-token") || "";
+  validateToken();
   const display = document.getElementById("config-display");
   try {
     const data = await apiFetch("/api/version", { noAuth: true });

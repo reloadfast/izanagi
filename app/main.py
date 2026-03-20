@@ -9,7 +9,7 @@ from starlette.responses import Response
 
 from app import __version__
 from app.db import create_db
-from app.routes import deploy, history, restart, templates, tokens, version
+from app.routes import deploy, history, me, restart, templates, tokens, version
 
 
 MAX_BODY_SIZE = int(os.getenv("IZANAGI_MAX_BODY_SIZE", str(1024 * 1024)))  # default 1 MB
@@ -36,6 +36,7 @@ app = FastAPI(title="Izanagi", version=__version__, lifespan=lifespan)
 app.add_middleware(ContentSizeLimitMiddleware)
 
 app.include_router(version.router, prefix="/api")
+app.include_router(me.router, prefix="/api")
 app.include_router(deploy.router, prefix="/api")
 app.include_router(tokens.router, prefix="/api")
 app.include_router(history.router, prefix="/api")

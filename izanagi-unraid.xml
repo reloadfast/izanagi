@@ -83,13 +83,13 @@
   <Config
     Name="Templates Directory"
     Target="/templates"
-    Default="/mnt/user/appdata/izanagi/templates"
+    Default="/boot/config/plugins/dockerMan/templates-user"
     Mode="rw"
     Description="Host directory containing your Unraid Community Applications XML templates. This should point to your actual Unraid custom templates folder."
     Type="Path"
     Display="always"
     Required="true"
-    Mask="false">/mnt/user/appdata/izanagi/templates</Config>
+    Mask="false">/boot/config/plugins/dockerMan/templates-user</Config>
 
   <Config
     Name="Data Directory"

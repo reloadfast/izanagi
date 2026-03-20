@@ -415,6 +415,45 @@ td.error { color: var(--error); }
 
 .text-muted { color: var(--text-muted); }
 
+/* ─── Docs ──────────────────────────────────────────────────────── */
+.docs-body {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.docs-section {
+  border-left: 3px solid var(--border);
+  padding-left: 16px;
+  margin-bottom: 20px;
+}
+
+.docs-section:last-child { margin-bottom: 0; }
+
+.docs-section h3 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.agent-prompt {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
 /* ─── Modal ─────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;

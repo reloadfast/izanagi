@@ -31,6 +31,7 @@
     <button class="tab"        data-tab="history"  role="tab">History</button>
     <button class="tab"        data-tab="tokens"   role="tab">Tokens</button>
     <button class="tab"        data-tab="settings" role="tab">Settings</button>
+    <button class="tab"        data-tab="docs"     role="tab">Docs</button>
   </nav>
 
   <!-- ── Main content ────────────────────────────────────────────── -->
@@ -135,6 +136,69 @@
           <p class="text-muted" style="font-size:.85rem">Loading…</p>
         </div>
       </div>
+    </section>
+
+    <!-- Docs tab -->
+    <section id="tab-docs" class="tab-content" role="tabpanel">
+
+      <div class="card">
+        <h2>What is Izanagi?</h2>
+        <p class="docs-body">
+          Izanagi is a self-hosted API service that lets coding agents — Claude Code, Aider, Cursor,
+          or any tool that can make HTTP requests — deploy Unraid Community Applications XML templates
+          directly to your server and trigger container restarts, without you touching the Unraid UI.
+        </p>
+        <p class="docs-body">
+          Every deploy is recorded in history with a timestamp, the agent that triggered it, and the outcome.
+          Access is controlled by per-agent bearer tokens so you can see exactly who deployed what, and revoke
+          access individually.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Sections</h2>
+
+        <div class="docs-section">
+          <h3>Deploy</h3>
+          <p class="docs-body">Paste or upload an Unraid XML template and give it a name. If you also provide a
+          container name, Izanagi will attempt a Docker restart immediately after the file is written.
+          If the restart is not possible (e.g. the container needs to be fully recreated), the UI will
+          tell you and link directly to the Unraid Docker page.</p>
+        </div>
+
+        <div class="docs-section">
+          <h3>History</h3>
+          <p class="docs-body">A log of every deploy: timestamp, template name, which agent triggered it,
+          whether the template was newly created or updated, and whether the deploy succeeded or failed.</p>
+        </div>
+
+        <div class="docs-section">
+          <h3>Tokens</h3>
+          <p class="docs-body">Create and revoke bearer tokens. Each token is tied to an agent name for
+          attribution. The raw token value is shown exactly once at creation — copy it immediately.
+          Tokens are stored as SHA-256 hashes; the original value is never persisted.</p>
+        </div>
+
+        <div class="docs-section">
+          <h3>Settings</h3>
+          <p class="docs-body">Paste your bearer token here so the browser can make authenticated API calls.
+          The token is stored in <code>localStorage</code> and never leaves your browser. Server build info
+          is also displayed here.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Agent System Prompt</h2>
+          <button class="btn btn-secondary btn-sm" id="copy-agent-prompt-btn">Copy</button>
+        </div>
+        <p class="docs-body" style="margin-bottom:12px">
+          Give this prompt to any coding agent to enable it to deploy templates through Izanagi.
+          The server URL and your stored token are filled in automatically.
+        </p>
+        <pre class="agent-prompt" id="agent-prompt"></pre>
+      </div>
+
     </section>
 
   </main>

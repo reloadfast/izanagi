@@ -49,6 +49,7 @@ function switchTab(name) {
   if (name === "history") loadHistory();
   if (name === "tokens") loadTokens();
   if (name === "settings") loadSettings();
+  if (name === "docs") loadDocs();
 }
 
 /* ─── Version badge ─────────────────────────────────────────────── */
@@ -408,6 +409,94 @@ async function loadSettings() {
   } catch (_) {
     display.innerHTML = `<p class="hint">Could not load server info.</p>`;
   }
+}
+
+/* ─── Docs ──────────────────────────────────────────────────────── */
+function loadDocs() {
+  const pre   = document.getElementById("agent-prompt");
+  const token = localStorage.getItem("izanagi-token") || "<YOUR_IZANAGI_TOKEN>";
+  const base  = window.location.origin;
+
+  pre.textContent = buildAgentPrompt(base, token);
+
+  document.getElementById("copy-agent-prompt-btn").addEventListener("click", copyAgentPrompt);
+}
+
+function copyAgentPrompt() {
+  const text = document.getElementById("agent-prompt").textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById("copy-agent-prompt-btn");
+    const orig = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(() => (btn.textContent = orig), 1500);
+  });
+}
+
+function buildAgentPrompt(base, token) {
+  return `\
+You have access to Izanagi, a self-hosted Unraid template deployment service.
+Use it to deploy Unraid Community Applications XML templates and restart containers.
+
+## Connection
+
+Base URL : ${base}
+Auth     : Bearer token — include the header below in every request
+           Authorization: Bearer ${token}
+
+## Deploy a template
+
+POST ${base}/api/deploy
+Content-Type: application/json
+Authorization: Bearer ${token}
+
+{
+  "template_name": "<name-without-extension>",
+  "xml_content": "<Container>...</Container>"
+}
+
+Responses:
+  { "status": "ok", "action": "created", "template_name": "..." }  — new template
+  { "status": "ok", "action": "updated", "template_name": "..." }  — overwrote existing
+
+Rules:
+- template_name must be alphanumeric with dashes or underscores only.
+- Deploying an existing name overwrites the file and records a new history entry.
+- Always validate the XML is a well-formed Unraid template before deploying.
+
+## Restart a container after deploy
+
+POST ${base}/api/restart/<container_name>
+Authorization: Bearer ${token}
+
+Responses:
+  { "status": "restarted",               "container_name": "..." }  — success
+  { "status": "manual_recreate_required","container_name": "...", "reason": "..." }  — needs user action
+
+If you receive manual_recreate_required, inform the user that the container must be
+stopped and recreated manually in the Unraid Docker UI — a simple restart is not enough.
+
+## Check deploy history
+
+GET ${base}/api/history
+Authorization: Bearer ${token}
+
+Returns an array of recent deploys: timestamp, template_name, agent_name, action, outcome.
+
+## Recommended workflow
+
+1. Obtain or generate the Unraid XML template for the application.
+2. POST to /api/deploy with the template name and XML content.
+3. If the user wants the container updated immediately, POST to /api/restart/<name>.
+4. If restart returns manual_recreate_required, tell the user to recreate the container
+   in Unraid and provide the reason.
+5. Confirm success by checking the response or querying /api/history.
+
+## What NOT to do
+
+- Do not deploy templates that are not valid Unraid Community Applications XML.
+- Do not include file extensions in template_name (the service adds .xml automatically).
+- Do not retry a failed deploy without understanding the error first.
+- Do not expose the bearer token in logs, comments, or committed code.`;
 }
 
 /* ─── Utilities ─────────────────────────────────────────────────── */

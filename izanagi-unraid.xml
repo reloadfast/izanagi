@@ -27,7 +27,7 @@
     Target="IZANAGI_BOOTSTRAP_TOKEN"
     Default=""
     Mode=""
-    Description="Secret used to create your first API token via the UI. Remove after bootstrapping."
+    Description="Secret used to create your first API token via the UI. Remove after bootstrapping. Generate one with: openssl rand -base64 32"
     Type="Variable"
     Display="always"
     Required="true"

@@ -67,17 +67,6 @@
     Required="false"
     Mask="false">9731</Config>
 
-  <Config
-    Name="Docker Socket"
-    Target="DOCKER_SOCKET"
-    Default="/var/run/docker.sock"
-    Mode=""
-    Description="Path to the Docker socket for container restart functionality."
-    Type="Variable"
-    Display="advanced"
-    Required="false"
-    Mask="false">/var/run/docker.sock</Config>
-
   <!-- ── Port Mappings ─────────────────────────────────────────── -->
   <Config
     Name="Web UI Port"

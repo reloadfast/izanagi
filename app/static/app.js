@@ -293,12 +293,10 @@ async function loadTokens() {
         <td>${esc(formatDate(t.created_at))}</td>
         <td>${t.last_used_at ? esc(formatDate(t.last_used_at)) : '<span class="text-muted">Never</span>'}</td>
         <td>
-          <button
-            class="btn btn-danger btn-sm"
-            onclick="revokeToken(${t.id}, ${JSON.stringify(t.agent_name)})"
-          >Revoke</button>
+          <button class="btn btn-danger btn-sm" data-token-id="${t.id}" data-agent-name="${esc(t.agent_name)}">Revoke</button>
         </td>
       `;
+      tr.querySelector("button").addEventListener("click", () => revokeToken(t.id, t.agent_name));
       tbody.appendChild(tr);
     });
   } catch (err) {

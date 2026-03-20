@@ -144,12 +144,20 @@ function initDeploy() {
 function readXmlFile(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
-    document.getElementById("xml-content").value = e.target.result;
+    const xmlText = e.target.result;
+    document.getElementById("xml-content").value = xmlText;
+
+    const match = xmlText.match(/<Name>(.*?)<\/Name>/i);
+    const xmlName = match ? match[1].trim() : null;
+    const fallback = file.name.replace(/\.xml$/i, "");
+
+    const nameInput = document.getElementById("template-name");
+    if (!nameInput.value) nameInput.value = xmlName || fallback;
+
+    const containerInput = document.getElementById("container-name");
+    if (!containerInput.value) containerInput.value = xmlName || "";
   };
   reader.readAsText(file);
-
-  const nameInput = document.getElementById("template-name");
-  if (!nameInput.value) nameInput.value = file.name.replace(/\.xml$/i, "");
 }
 
 async function runDeploy() {

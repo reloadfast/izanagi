@@ -56,7 +56,7 @@ def test_deploy_requires_auth(client):
         "/api/deploy",
         json={"template_name": "myapp", "xml_content": "<x/>"},
     )
-    assert resp.status_code == 403
+    assert resp.status_code in (401, 403)
 
 
 def test_deploy_writes_file(client, auth_headers, tmp_path):

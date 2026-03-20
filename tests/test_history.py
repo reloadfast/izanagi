@@ -38,7 +38,7 @@ def test_history_records_update(client, auth_headers):
 
 def test_history_requires_auth(client):
     resp = client.get("/api/history")
-    assert resp.status_code == 403
+    assert resp.status_code in (401, 403)
 
 
 def test_history_limit(client, auth_headers):

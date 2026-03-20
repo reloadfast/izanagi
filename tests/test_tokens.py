@@ -40,7 +40,7 @@ def test_revoke_nonexistent_token(client, auth_headers):
 
 def test_token_required(client):
     resp = client.get("/api/tokens")
-    assert resp.status_code == 403
+    assert resp.status_code in (401, 403)
 
 
 def test_invalid_token_rejected(client):

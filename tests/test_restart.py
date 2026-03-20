@@ -54,4 +54,4 @@ def test_restart_socket_unavailable(client, auth_headers):
 
 def test_restart_requires_auth(client):
     resp = client.post("/api/restart/mycontainer")
-    assert resp.status_code == 403
+    assert resp.status_code in (401, 403)

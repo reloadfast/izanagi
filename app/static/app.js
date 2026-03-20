@@ -49,7 +49,8 @@ function switchTab(name) {
     s.classList.toggle("active", s.id === `tab-${name}`)
   );
 
-  if (name === "history") loadHistory();
+  if (name === "history") { loadHistory(); startHistoryRefresh(); }
+  else stopHistoryRefresh();
   if (name === "tokens") loadTokens();
   if (name === "settings") loadSettings();
   if (name === "docs") loadDocs();
@@ -216,6 +217,34 @@ function showFeedback(el, type, html) {
 }
 
 /* ─── History ───────────────────────────────────────────────────── */
+let _historyData  = [];
+let _historyTimer = null;
+
+function renderHistoryRows() {
+  const tbody = document.getElementById("history-body");
+  const empty = document.getElementById("history-empty");
+
+  if (!_historyData.length) {
+    tbody.innerHTML = "";
+    empty.classList.remove("hidden");
+    return;
+  }
+
+  empty.classList.add("hidden");
+  tbody.innerHTML = "";
+  _historyData.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td title="${esc(formatDate(row.timestamp))}" style="cursor:default">${esc(relativeTime(row.timestamp))}</td>
+      <td><code>${esc(row.template_name)}</code></td>
+      <td>${esc(row.agent_name)}</td>
+      <td><span class="badge badge-${row.action}">${esc(row.action)}</span></td>
+      <td><span class="badge badge-${row.outcome}">${esc(row.outcome)}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 async function loadHistory() {
   const tbody = document.getElementById("history-body");
   const empty = document.getElementById("history-empty");
@@ -224,28 +253,20 @@ async function loadHistory() {
   empty.classList.add("hidden");
 
   try {
-    const data = await apiFetch("/api/history");
-    tbody.innerHTML = "";
-
-    if (!data.length) {
-      empty.classList.remove("hidden");
-      return;
-    }
-
-    data.forEach((row) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${esc(formatDate(row.timestamp))}</td>
-        <td><code>${esc(row.template_name)}</code></td>
-        <td>${esc(row.agent_name)}</td>
-        <td><span class="badge badge-${row.action}">${esc(row.action)}</span></td>
-        <td><span class="badge badge-${row.outcome}">${esc(row.outcome)}</span></td>
-      `;
-      tbody.appendChild(tr);
-    });
+    _historyData = await apiFetch("/api/history");
+    renderHistoryRows();
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="5" class="error">${esc(err.message)}</td></tr>`;
   }
+}
+
+function startHistoryRefresh() {
+  stopHistoryRefresh();
+  _historyTimer = setInterval(() => renderHistoryRows(), 60_000);
+}
+
+function stopHistoryRefresh() {
+  if (_historyTimer) { clearInterval(_historyTimer); _historyTimer = null; }
 }
 
 /* ─── Tokens ────────────────────────────────────────────────────── */
@@ -576,6 +597,22 @@ function formatDate(iso) {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+function relativeTime(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60)                        return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60)                        return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24)                        return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d === 1)                       return "yesterday";
+  if (d < 30)                        return `${d}d ago`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12)                       return `${mo}mo ago`;
+  return `${Math.floor(mo / 12)}y ago`;
 }
 
 function esc(str) {

@@ -415,6 +415,34 @@ td.error { color: var(--error); }
 
 .text-muted { color: var(--text-muted); }
 
+/* ─── No-token banner ───────────────────────────────────────────── */
+.no-token-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 24px;
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  color: var(--warning);
+  font-size: 0.85rem;
+}
+
+.no-token-banner strong { color: inherit; }
+.no-token-banner code   { background: color-mix(in srgb, var(--warning) 20%, transparent); color: inherit; }
+
+.no-token-banner .btn {
+  margin-left: auto;
+  white-space: nowrap;
+  background: var(--warning);
+  color: #000;
+}
+.no-token-banner .btn:hover { opacity: .88; }
+
+/* ─── Token status indicator ────────────────────────────────────── */
+.token-status-ok  { font-size: .82rem; color: var(--success); margin-top: 6px; }
+.token-status-err { font-size: .82rem; color: var(--error);   margin-top: 6px; }
+
 /* ─── Docs ──────────────────────────────────────────────────────── */
 .docs-body {
   font-size: 0.9rem;

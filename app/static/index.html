@@ -25,6 +25,13 @@
     </div>
   </header>
 
+  <!-- ── No-token banner ────────────────────────────────────────── -->
+  <div id="no-token-banner" class="no-token-banner hidden">
+    <span>No API token configured.</span>
+    <span>Paste your <strong>bootstrap token</strong> (from the <code>IZANAGI_BOOTSTRAP_TOKEN</code> env var) in Settings to get started, then create a permanent agent token.</span>
+    <button class="btn btn-primary btn-sm" id="banner-go-settings">Go to Settings</button>
+  </div>
+
   <!-- ── Tab nav ─────────────────────────────────────────────────── -->
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="deploy"   role="tab">Deploy</button>
@@ -128,7 +135,11 @@
             <input type="password" id="api-token-input" placeholder="Paste your bearer token here" autocomplete="off" />
             <button class="btn btn-secondary btn-sm" id="save-token-btn">Save</button>
           </div>
-          <p class="hint">Stored in browser localStorage. Never sent to third parties.</p>
+          <p class="hint">
+            This is the token the <em>browser</em> uses to authenticate against the API — stored in localStorage, never sent to third parties.<br>
+            <strong>First time?</strong> Paste the value of <code>IZANAGI_BOOTSTRAP_TOKEN</code> from your container's environment, save it, then go to <strong>Tokens</strong> to create a permanent agent token.
+          </p>
+          <div id="token-status"></div>
         </div>
 
         <h3>Server Info</h3>

@@ -7,11 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initDeploy();
   initTokenModal();
   initSettings();
+  initNoTokenBanner();
 
   document.getElementById("refresh-history").addEventListener("click", loadHistory);
   document.getElementById("new-token-btn").addEventListener("click", openTokenModal);
 
-  switchTab("deploy");
+  // First-run: no token → land on Settings instead of Deploy
+  const hasToken = !!localStorage.getItem("izanagi-token");
+  switchTab(hasToken ? "deploy" : "settings");
   loadVersionBadge();
 });
 
@@ -319,6 +322,8 @@ function openTokenModal() {
   document.getElementById("modal-create").classList.remove("hidden");
   document.getElementById("modal-result").classList.add("hidden");
   document.getElementById("new-agent-name").value = "";
+  const errEl = document.getElementById("modal-inline-error");
+  if (errEl) errEl.textContent = "";
   setTimeout(() => document.getElementById("new-agent-name").focus(), 50);
 }
 
@@ -347,7 +352,18 @@ async function generateToken() {
     document.getElementById("modal-create").classList.add("hidden");
     document.getElementById("modal-result").classList.remove("hidden");
   } catch (err) {
-    alert(`Failed to create token: ${err.message}`);
+    let msg = err.message;
+    if (msg.includes("No API token set")) {
+      msg = "No API token configured. Go to Settings and paste your bootstrap token first.";
+    }
+    let errEl = document.getElementById("modal-inline-error");
+    if (!errEl) {
+      errEl = document.createElement("p");
+      errEl.id = "modal-inline-error";
+      errEl.style.cssText = "color:var(--error);font-size:.85rem;margin-top:10px";
+      document.getElementById("modal-create").appendChild(errEl);
+    }
+    errEl.textContent = msg;
   } finally {
     btn.disabled = false;
     btn.textContent = "Generate Token";
@@ -364,17 +380,34 @@ function copyGeneratedToken() {
   });
 }
 
+/* ─── No-token banner ───────────────────────────────────────────── */
+function initNoTokenBanner() {
+  document.getElementById("banner-go-settings").addEventListener("click", () => {
+    switchTab("settings");
+  });
+}
+
+function updateBanner() {
+  const banner = document.getElementById("no-token-banner");
+  const hasToken = !!localStorage.getItem("izanagi-token");
+  banner.classList.toggle("hidden", hasToken);
+}
+
 /* ─── Settings ──────────────────────────────────────────────────── */
 function initSettings() {
   const input = document.getElementById("api-token-input");
   input.value = localStorage.getItem("izanagi-token") || "";
 
-  document.getElementById("save-token-btn").addEventListener("click", () => {
-    localStorage.setItem("izanagi-token", input.value.trim());
+  document.getElementById("save-token-btn").addEventListener("click", async () => {
+    const val = input.value.trim();
+    localStorage.setItem("izanagi-token", val);
+    updateBanner();
+
     const btn = document.getElementById("save-token-btn");
-    const orig = btn.textContent;
     btn.textContent = "Saved!";
-    setTimeout(() => (btn.textContent = orig), 1500);
+    setTimeout(() => (btn.textContent = "Save"), 1500);
+
+    await validateToken();
   });
 
   input.addEventListener("keydown", (e) => {
@@ -382,7 +415,27 @@ function initSettings() {
   });
 }
 
+async function validateToken() {
+  const statusEl = document.getElementById("token-status");
+  if (!localStorage.getItem("izanagi-token")) {
+    statusEl.innerHTML = "";
+    return;
+  }
+  try {
+    const tokens = await apiFetch("/api/tokens");
+    statusEl.className = "token-status-ok";
+    statusEl.textContent = `✓ Token valid`;
+    void tokens; // response confirms auth worked
+  } catch (e) {
+    statusEl.className = "token-status-err";
+    statusEl.textContent = `✗ ${e.message}`;
+  }
+}
+
 async function loadSettings() {
+  updateBanner();
+  const input = document.getElementById("api-token-input");
+  input.value = localStorage.getItem("izanagi-token") || "";
   const display = document.getElementById("config-display");
   try {
     const data = await apiFetch("/api/version", { noAuth: true });

@@ -402,6 +402,7 @@ function initSettings() {
     const val = input.value.trim();
     localStorage.setItem("izanagi-token", val);
     updateBanner();
+    loadDocs(); // keep Docs prompt in sync immediately
 
     const btn = document.getElementById("save-token-btn");
     btn.textContent = "Saved!";
@@ -484,7 +485,8 @@ function loadDocs() {
 
   pre.textContent = buildAgentPrompt(base, token);
 
-  document.getElementById("copy-agent-prompt-btn").addEventListener("click", copyAgentPrompt);
+  // Use onclick to avoid stacking listeners on repeated tab visits
+  document.getElementById("copy-agent-prompt-btn").onclick = copyAgentPrompt;
 }
 
 function copyAgentPrompt() {

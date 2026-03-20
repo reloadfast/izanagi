@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.db import create_db
-from app.routes import deploy, history, restart, tokens, version
+from app.routes import deploy, history, restart, templates, tokens, version
 
 
 @asynccontextmanager
@@ -23,6 +23,7 @@ app.include_router(deploy.router, prefix="/api")
 app.include_router(tokens.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(restart.router, prefix="/api")
+app.include_router(templates.router, prefix="/api")
 
 _static_dir = str(Path(__file__).parent / "static")
 app.mount("/", StaticFiles(directory=_static_dir, html=True), name="static")

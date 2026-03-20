@@ -15,10 +15,49 @@ def validate_xml(xml_content: str) -> None:
         )
 
 
+def _safe_name(template_name: str) -> str:
+    return "".join(c for c in template_name if c.isalnum() or c in "-_")
+
+
+def list_templates(templates_path: str) -> list[dict]:
+    path = Path(templates_path)
+    if not path.exists():
+        return []
+    results = []
+    for f in sorted(path.glob("*.xml")):
+        stat = f.stat()
+        results.append({
+            "name": f.stem,
+            "size_bytes": stat.st_size,
+            "modified_at": stat.st_mtime,
+        })
+    return results
+
+
+def read_template(templates_path: str, template_name: str) -> str | None:
+    safe = _safe_name(template_name)
+    if not safe:
+        return None
+    file_path = Path(templates_path) / f"{safe}.xml"
+    if not file_path.exists():
+        return None
+    return file_path.read_text(encoding="utf-8")
+
+
+def delete_template_file(templates_path: str, template_name: str) -> bool:
+    safe = _safe_name(template_name)
+    if not safe:
+        return False
+    file_path = Path(templates_path) / f"{safe}.xml"
+    if not file_path.exists():
+        return False
+    file_path.unlink()
+    return True
+
+
 def write_template(templates_path: str, template_name: str, xml_content: str) -> dict:
     try:
-        # Sanitize: only alphanumeric, dash, underscore
-        safe_name = "".join(c for c in template_name if c.isalnum() or c in "-_")
+        safe_name = _safe_name(template_name)
         if not safe_name:
             return {
                 "action": "error",

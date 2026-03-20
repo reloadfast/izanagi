@@ -30,15 +30,10 @@ ENV APP_VERSION=${VERSION} \
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Create non-root user and required directories
-RUN useradd -m -u 1000 -s /sbin/nologin izanagi && \
-    mkdir -p /data /templates && \
-    chown -R izanagi:izanagi /data /templates
+RUN mkdir -p /data /templates
 
 WORKDIR /app
-COPY --chown=izanagi:izanagi app/ ./app/
-
-USER izanagi
+COPY app/ ./app/
 
 EXPOSE ${IZANAGI_PORT}
 

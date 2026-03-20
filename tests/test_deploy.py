@@ -1,3 +1,25 @@
+def test_deploy_body_too_large(client, auth_headers, monkeypatch):
+    import app.main as main_module
+    monkeypatch.setattr(main_module, "MAX_BODY_SIZE", 10)
+    resp = client.post(
+        "/api/deploy",
+        json={"template_name": "huge", "xml_content": "<Container/>" * 100},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 413
+
+
+def test_deploy_body_at_limit_passes(client, auth_headers, monkeypatch):
+    import app.main as main_module
+    monkeypatch.setattr(main_module, "MAX_BODY_SIZE", 1024 * 1024)
+    resp = client.post(
+        "/api/deploy",
+        json={"template_name": "small", "xml_content": "<Container/>"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+
+
 def test_deploy_new_template(client, auth_headers, tmp_path):
     resp = client.post(
         "/api/deploy",

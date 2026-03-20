@@ -299,6 +299,9 @@ textarea { resize: vertical; font-family: "JetBrains Mono", monospace; font-size
 .btn-danger  { background: var(--danger); color: #fff; }
 .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
 
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover:not(:disabled) { filter: brightness(1.1); }
+
 .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
 
 .icon-btn {

@@ -396,11 +396,15 @@ async function generateToken() {
 
 function copyGeneratedToken() {
   const token = document.getElementById("generated-token").textContent;
-  navigator.clipboard.writeText(token).then(() => {
-    const btn = document.getElementById("copy-token-btn");
-    const orig = btn.textContent;
-    btn.textContent = "Copied!";
-    setTimeout(() => (btn.textContent = orig), 1500);
+  const btn = document.getElementById("copy-token-btn");
+  copyToClipboard(token).then((ok) => {
+    btn.textContent = ok ? "Copied!" : "Select & copy manually";
+    btn.classList.toggle("btn-success", ok);
+    btn.classList.toggle("btn-danger", !ok);
+    setTimeout(() => {
+      btn.textContent = "Copy";
+      btn.classList.remove("btn-success", "btn-danger");
+    }, 2000);
   });
 }
 
@@ -582,11 +586,10 @@ function renderAgentPrompt(base) {
 
 function copyAgentPrompt() {
   const text = document.getElementById("agent-prompt").textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById("copy-agent-prompt-btn");
-    const orig = btn.textContent;
-    btn.textContent = "Copied!";
-    setTimeout(() => (btn.textContent = orig), 1500);
+  const btn = document.getElementById("copy-agent-prompt-btn");
+  copyToClipboard(text).then((ok) => {
+    btn.textContent = ok ? "Copied!" : "Failed";
+    setTimeout(() => (btn.textContent = "Copy"), 1500);
   });
 }
 
@@ -655,6 +658,26 @@ Returns an array of recent deploys: timestamp, template_name, agent_name, action
 - Do not include file extensions in template_name (the service adds .xml automatically).
 - Do not retry a failed deploy without understanding the error first.
 - Do not expose the bearer token in logs, comments, or committed code.`;
+}
+
+/* ─── Clipboard ─────────────────────────────────────────────────── */
+async function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_) {}
+  }
+  // Fallback for HTTP (non-secure context)
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  const ok = document.execCommand("copy");
+  document.body.removeChild(ta);
+  return ok;
 }
 
 /* ─── Utilities ─────────────────────────────────────────────────── */

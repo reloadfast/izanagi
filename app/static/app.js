@@ -439,6 +439,12 @@ function initSettings() {
 
   document.getElementById("test-token-btn").addEventListener("click", validateToken);
 
+  document.getElementById("reveal-token-btn").addEventListener("click", () => {
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    document.getElementById("reveal-token-btn").textContent = isHidden ? "🙈" : "👁";
+  });
+
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("save-token-btn").click();
   });
@@ -474,6 +480,8 @@ async function loadSettings() {
   updateBanner();
   const input = document.getElementById("api-token-input");
   input.value = localStorage.getItem("izanagi-token") || "";
+  input.type = "password";
+  document.getElementById("reveal-token-btn").textContent = "👁";
   validateToken();
   const display = document.getElementById("config-display");
   try {

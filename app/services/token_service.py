@@ -1,6 +1,6 @@
 import hashlib
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
@@ -14,7 +14,7 @@ def create_token(db: Session, agent_name: str) -> tuple[Token, str]:
     token = Token(
         agent_name=agent_name,
         token_hash=token_hash,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(token)
     db.commit()

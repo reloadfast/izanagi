@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -28,7 +28,7 @@ def deploy_template(
     result = write_template(templates_path, body.template_name, body.xml_content)
 
     record = DeployHistory(
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         template_name=body.template_name,
         agent_name=token.agent_name,
         action=result["action"],

@@ -36,18 +36,19 @@ def test_deploy_records_history(client, auth_headers):
     assert any(h["template_name"] == "histtest" for h in hist)
 
 
-def test_deploy_invalid_template_name(client, auth_headers):
+def test_deploy_invalid_template_name(client, auth_headers, tmp_path):
+    # "../../etc/passwd" sanitizes to "etcpasswd" — dots and slashes are stripped
     resp = client.post(
         "/api/deploy",
         json={"template_name": "../../etc/passwd", "xml_content": "<x/>"},
         headers=auth_headers,
     )
-    # Either succeeds with sanitized name or returns 500 for empty safe name
-    # The key is it must not path-traverse
-    if resp.status_code == 200:
-        assert resp.json()["template_name"] not in ("../../etc/passwd",)
-    else:
-        assert resp.status_code == 500
+    assert resp.status_code == 200
+    # File must exist at the sanitized path, not at any traversal location
+    safe_file = tmp_path / "templates" / "etcpasswd.xml"
+    assert safe_file.exists(), "Sanitized file should be written"
+    traversal = tmp_path / "templates" / "../../etc" / "passwd"
+    assert not traversal.exists(), "Path traversal must not occur"
 
 
 def test_deploy_requires_auth(client):

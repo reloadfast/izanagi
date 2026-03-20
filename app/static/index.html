@@ -204,10 +204,17 @@
           <h2>Agent System Prompt</h2>
           <button class="btn btn-secondary btn-sm" id="copy-agent-prompt-btn">Copy</button>
         </div>
-        <p class="docs-body" style="margin-bottom:12px">
-          Give this prompt to any coding agent to enable it to deploy templates through Izanagi.
-          The server URL and your stored token are filled in automatically.
+        <p class="docs-body" style="margin-bottom:16px">
+          Select an agent token below to generate a ready-to-paste system prompt.
+          Create the token first in the <strong>Tokens</strong> tab, then return here and select it.
         </p>
+        <div class="form-group">
+          <label for="prompt-token-select">Agent Token</label>
+          <select id="prompt-token-select">
+            <option value="">— select a token —</option>
+          </select>
+          <p class="hint" id="prompt-token-hint"></p>
+        </div>
         <pre class="agent-prompt" id="agent-prompt"></pre>
       </div>
 

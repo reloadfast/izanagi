@@ -372,6 +372,11 @@ async function generateToken() {
     document.getElementById("generated-token").textContent = result.token;
     document.getElementById("modal-create").classList.add("hidden");
     document.getElementById("modal-result").classList.remove("hidden");
+
+    // Cache raw token in sessionStorage so Docs tab can use it this session
+    const sessionTokens = JSON.parse(sessionStorage.getItem("izanagi-session-tokens") || "[]");
+    sessionTokens.push({ id: result.id, agent_name: result.agent_name, token: result.token });
+    sessionStorage.setItem("izanagi-session-tokens", JSON.stringify(sessionTokens));
   } catch (err) {
     let msg = err.message;
     if (msg.includes("No API token set")) {
@@ -499,15 +504,74 @@ async function loadSettings() {
 }
 
 /* ─── Docs ──────────────────────────────────────────────────────── */
-function loadDocs() {
-  const pre   = document.getElementById("agent-prompt");
-  const token = localStorage.getItem("izanagi-token") || "<YOUR_IZANAGI_TOKEN>";
-  const base  = window.location.origin;
-
-  pre.textContent = buildAgentPrompt(base, token);
+async function loadDocs() {
+  const base = window.location.origin;
 
   // Use onclick to avoid stacking listeners on repeated tab visits
   document.getElementById("copy-agent-prompt-btn").onclick = copyAgentPrompt;
+
+  const select  = document.getElementById("prompt-token-select");
+  const hint    = document.getElementById("prompt-token-hint");
+  const pre     = document.getElementById("agent-prompt");
+
+  // Populate token dropdown
+  try {
+    const tokens = await apiFetch("/api/tokens");
+    const sessionTokens = JSON.parse(sessionStorage.getItem("izanagi-session-tokens") || "[]");
+    const sessionMap = Object.fromEntries(sessionTokens.map((t) => [String(t.id), t.token]));
+
+    // Rebuild options (preserve selection if possible)
+    const currentVal = select.value;
+    select.innerHTML = `<option value="">— select a token —</option>`;
+    tokens.forEach((t) => {
+      const opt = document.createElement("option");
+      opt.value = t.id;
+      opt.textContent = t.agent_name;
+      opt.dataset.agentName = t.agent_name;
+      opt.dataset.hasRaw = sessionMap[t.id] ? "1" : "0";
+      select.appendChild(opt);
+    });
+    // Restore previous selection
+    if (currentVal) select.value = currentVal;
+  } catch (_) {
+    // Non-fatal — leave dropdown with just the placeholder
+  }
+
+  renderAgentPrompt(base);
+
+  select.onchange = () => renderAgentPrompt(base);
+}
+
+function renderAgentPrompt(base) {
+  const select  = document.getElementById("prompt-token-select");
+  const hint    = document.getElementById("prompt-token-hint");
+  const pre     = document.getElementById("agent-prompt");
+
+  const selectedOpt = select.options[select.selectedIndex];
+  const tokenId     = select.value;
+
+  if (!tokenId) {
+    // No token selected — fall back to the browser's saved token or a generic placeholder
+    const saved = localStorage.getItem("izanagi-token") || "<YOUR_IZANAGI_TOKEN>";
+    pre.textContent = buildAgentPrompt(base, saved);
+    hint.textContent = "";
+    return;
+  }
+
+  const agentName   = selectedOpt.dataset.agentName || selectedOpt.textContent;
+  const sessionTokens = JSON.parse(sessionStorage.getItem("izanagi-session-tokens") || "[]");
+  const sessionMap  = Object.fromEntries(sessionTokens.map((t) => [String(t.id), t.token]));
+  const rawToken    = sessionMap[tokenId];
+
+  if (rawToken) {
+    pre.textContent = buildAgentPrompt(base, rawToken);
+    hint.textContent = "";
+  } else {
+    // Token exists but was created in a previous session — use a named placeholder
+    const placeholder = `<TOKEN_FOR_${agentName.toUpperCase().replace(/\s+/g, "_")}>`;
+    pre.textContent = buildAgentPrompt(base, placeholder);
+    hint.textContent = "Token value not available — it was shown only once at creation. Replace the placeholder with the actual token value.";
+  }
 }
 
 function copyAgentPrompt() {

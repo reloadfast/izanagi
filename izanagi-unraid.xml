@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Izanagi</Name>
+  <Repository>ghcr.io/reloadfast/izanagi:latest</Repository>
+  <Registry>https://github.com/reloadfast/izanagi/pkgs/container/izanagi</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/reloadfast/izanagi/issues</Support>
+  <Project>https://github.com/reloadfast/izanagi</Project>
+  <Overview>
+    Izanagi is a self-hosted Unraid template deployment service. It lets coding
+    agents (Claude Code, Aider, etc.) push Unraid Community Applications XML
+    templates and trigger container restarts via a simple authenticated REST API,
+    with a built-in web UI for token management, deploy history, and more.
+  </Overview>
+  <Category>Tools:</Category>
+  <WebUI>http://[IP]:[PORT:9731]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/reloadfast/izanagi/main/izanagi-unraid.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/reloadfast/izanagi/main/docs/icon.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <DateInstalled></DateInstalled>
+
+  <!-- ── Environment Variables ─────────────────────────────────── -->
+  <Config
+    Name="Bootstrap Token"
+    Target="IZANAGI_BOOTSTRAP_TOKEN"
+    Default=""
+    Mode=""
+    Description="Secret used to create your first API token via the UI. Remove after bootstrapping."
+    Type="Variable"
+    Display="always"
+    Required="true"
+    Mask="true">
+  </Config>
+
+  <Config
+    Name="Templates Path"
+    Target="IZANAGI_TEMPLATES_PATH"
+    Default="/templates"
+    Mode=""
+    Description="Path inside the container where Unraid XML templates are written."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false">/templates</Config>
+
+  <Config
+    Name="Database Path"
+    Target="IZANAGI_DB_PATH"
+    Default="/data/izanagi.db"
+    Mode=""
+    Description="Path inside the container for the SQLite database file."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false">/data/izanagi.db</Config>
+
+  <Config
+    Name="Port"
+    Target="IZANAGI_PORT"
+    Default="9731"
+    Mode=""
+    Description="Port the Izanagi web server listens on."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false">9731</Config>
+
+  <Config
+    Name="Docker Socket"
+    Target="DOCKER_SOCKET"
+    Default="/var/run/docker.sock"
+    Mode=""
+    Description="Path to the Docker socket for container restart functionality."
+    Type="Variable"
+    Display="advanced"
+    Required="false"
+    Mask="false">/var/run/docker.sock</Config>
+
+  <!-- ── Port Mappings ─────────────────────────────────────────── -->
+  <Config
+    Name="Web UI Port"
+    Target="9731"
+    Default="9731"
+    Mode="tcp"
+    Description="Port exposed on the Unraid host for the Izanagi web interface."
+    Type="Port"
+    Display="always"
+    Required="true"
+    Mask="false">9731</Config>
+
+  <!-- ── Volume Mappings ───────────────────────────────────────── -->
+  <Config
+    Name="Templates Directory"
+    Target="/templates"
+    Default="/mnt/user/appdata/izanagi/templates"
+    Mode="rw"
+    Description="Host directory containing your Unraid Community Applications XML templates. This should point to your actual Unraid custom templates folder."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/izanagi/templates</Config>
+
+  <Config
+    Name="Data Directory"
+    Target="/data"
+    Default="/mnt/user/appdata/izanagi/data"
+    Mode="rw"
+    Description="Persistent storage for the Izanagi SQLite database (tokens, history)."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/mnt/user/appdata/izanagi/data</Config>
+
+  <Config
+    Name="Docker Socket"
+    Target="/var/run/docker.sock"
+    Default="/var/run/docker.sock"
+    Mode="rw"
+    Description="Docker socket for triggering container restarts from the API."
+    Type="Path"
+    Display="always"
+    Required="true"
+    Mask="false">/var/run/docker.sock</Config>
+</Container>

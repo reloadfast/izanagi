@@ -1,0 +1,29 @@
+services:
+  izanagi:
+    build:
+      context: .
+      args:
+        VERSION: "0.1.0"
+        BUILD_SHA: "local"
+    image: izanagi:local
+    container_name: izanagi
+    ports:
+      - "9731:9731"
+    environment:
+      IZANAGI_PORT: "9731"
+      IZANAGI_TEMPLATES_PATH: /templates
+      IZANAGI_DB_PATH: /data/izanagi.db
+      DOCKER_SOCKET: /var/run/docker.sock
+      # Set a strong secret here for bootstrapping — used to create your first token
+      IZANAGI_BOOTSTRAP_TOKEN: "changeme-replace-this"
+    volumes:
+      - ./data:/data
+      - ./templates:/templates
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9731/api/version')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3

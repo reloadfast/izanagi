@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Izanagi</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <header>
+    <div class="header-left">
+      <h1>Izanagi</h1>
+      <span
+        class="version-badge"
+        id="version-badge"
+        title="Click to copy build info"
+      >dev</span>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="theme-toggle" title="Toggle dark / light mode" aria-label="Toggle theme">
+        <span id="theme-icon">☀</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Tab nav ─────────────────────────────────────────────────── -->
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="deploy"   role="tab">Deploy</button>
+    <button class="tab"        data-tab="history"  role="tab">History</button>
+    <button class="tab"        data-tab="tokens"   role="tab">Tokens</button>
+    <button class="tab"        data-tab="settings" role="tab">Settings</button>
+  </nav>
+
+  <!-- ── Main content ────────────────────────────────────────────── -->
+  <main>
+
+    <!-- Deploy tab -->
+    <section id="tab-deploy" class="tab-content active" role="tabpanel">
+      <div class="card">
+        <h2>Deploy Template</h2>
+
+        <div class="form-group">
+          <label for="template-name">Template Name</label>
+          <input type="text" id="template-name" placeholder="e.g. my-app" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>XML Content</label>
+          <div class="file-drop-area" id="drop-area">
+            <p>Drop a <code>.xml</code> file here or
+              <button type="button" id="file-btn">browse</button>
+            </p>
+            <input type="file" id="file-input" accept=".xml" hidden />
+          </div>
+          <textarea id="xml-content" rows="12" placeholder="Paste Unraid XML template content here…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="container-name">Container Name <span style="font-weight:400;text-transform:none">(optional — triggers restart after deploy)</span></label>
+          <input type="text" id="container-name" placeholder="e.g. my-app" autocomplete="off" />
+        </div>
+
+        <button class="btn btn-primary" id="deploy-btn">Deploy</button>
+        <div id="deploy-feedback" class="feedback hidden"></div>
+      </div>
+    </section>
+
+    <!-- History tab -->
+    <section id="tab-history" class="tab-content" role="tabpanel">
+      <div class="card">
+        <div class="card-header">
+          <h2>Deploy History</h2>
+          <button class="btn btn-secondary btn-sm" id="refresh-history">↺ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Template</th>
+                <th>Agent</th>
+                <th>Action</th>
+                <th>Outcome</th>
+              </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+          <div id="history-empty" class="empty-state hidden">No deploy history yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tokens tab -->
+    <section id="tab-tokens" class="tab-content" role="tabpanel">
+      <div class="card">
+        <div class="card-header">
+          <h2>API Tokens</h2>
+          <button class="btn btn-primary btn-sm" id="new-token-btn">+ New Token</button>
+        </div>
+        <div class="table-wrap">
+          <table id="tokens-table">
+            <thead>
+              <tr>
+                <th>Agent Name</th>
+                <th>Created</th>
+                <th>Last Used</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tokens-body"></tbody>
+          </table>
+          <div id="tokens-empty" class="empty-state hidden">No tokens yet. Create one to get started.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings tab -->
+    <section id="tab-settings" class="tab-content" role="tabpanel">
+      <div class="card">
+        <h2>Settings</h2>
+
+        <div class="form-group">
+          <label for="api-token-input">API Token</label>
+          <div class="input-with-action">
+            <input type="password" id="api-token-input" placeholder="Paste your bearer token here" autocomplete="off" />
+            <button class="btn btn-secondary btn-sm" id="save-token-btn">Save</button>
+          </div>
+          <p class="hint">Stored in browser localStorage. Never sent to third parties.</p>
+        </div>
+
+        <h3>Server Info</h3>
+        <div id="config-display">
+          <p class="text-muted" style="font-size:.85rem">Loading…</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── New Token Modal ──────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Create New Token</h3>
+        <button class="icon-btn" id="modal-close" aria-label="Close">✕</button>
+      </div>
+
+      <div id="modal-create">
+        <div class="form-group">
+          <label for="new-agent-name">Agent Name</label>
+          <input type="text" id="new-agent-name" placeholder="e.g. Claude Code" autocomplete="off" />
+        </div>
+        <button class="btn btn-primary" id="generate-token-btn">Generate Token</button>
+      </div>
+
+      <div id="modal-result" class="hidden">
+        <div class="alert alert-warning">
+          <strong>Save this token now.</strong> It will not be shown again after you close this dialog.
+        </div>
+        <div class="token-display">
+          <code id="generated-token"></code>
+          <button class="btn btn-secondary btn-sm" id="copy-token-btn">Copy</button>
+        </div>
+        <button class="btn btn-primary" id="modal-done-btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -18,7 +18,7 @@ def auth_required(
 ) -> Token:
     raw = credentials.credentials
 
-    bootstrap = os.getenv("IZANAGI_BOOTSTRAP_TOKEN")
+    bootstrap = (os.getenv("IZANAGI_BOOTSTRAP_TOKEN") or "").strip()
     if bootstrap and raw == bootstrap:
         return Token(
             id=-1,

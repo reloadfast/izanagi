@@ -26,6 +26,7 @@ def client(tmp_path, monkeypatch):
     with TestClient(app) as c:
         yield c
 
+    engine.dispose()
     db_module._engine = None
 
 

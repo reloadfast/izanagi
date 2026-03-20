@@ -38,4 +38,4 @@ jobs:
 
       - name: Dependency vulnerability scan
         run: |
-          pip-audit --requirement requirements.txt --fail-on-vuln-level HIGH
+          pip-audit -r requirements.txt
